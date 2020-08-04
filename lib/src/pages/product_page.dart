@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:formularios_bloc/src/models/producto_model.dart';
 import 'package:formularios_bloc/src/providers/productos_provider.dart';
 import 'package:formularios_bloc/src/utils/utils.dart' as utils;
+import 'package:image_picker/image_picker.dart';
 
 class ProductPage extends StatefulWidget {
   static final String routeName = "product_page";
@@ -12,23 +15,36 @@ class ProductPage extends StatefulWidget {
 
 class _ProductPageState extends State<ProductPage> {
   final formKey = GlobalKey<FormState>();
-  ProductoModel producto = new ProductoModel();
+  final scaffoldKey = GlobalKey<ScaffoldState>();
   final productoProider = new ProductosProvider();
+
+  File foto;
+
+  ProductoModel producto = new ProductoModel();
+
+  bool _guardando = false;
 
   @override
   Widget build(BuildContext context) {
+
+    // una forma de recibir parametros
+    final ProductoModel prodData = ModalRoute.of(context).settings.arguments;
+    if(prodData != null) {
+      producto = prodData;
+    }
     
     return Scaffold(
+      key: scaffoldKey,
       appBar: AppBar(
         title: Text('Producto'),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.photo_size_select_actual),
-            onPressed: () {},
+            onPressed: () => _seleccionarFoto(ImageSource.gallery),
           ),
           IconButton(
             icon: Icon(Icons.camera_alt),
-            onPressed: () {},
+            onPressed: () => _seleccionarFoto(ImageSource.camera),
           ),
         ],
       ),
@@ -39,6 +55,7 @@ class _ProductPageState extends State<ProductPage> {
             key: formKey,
             child: Column(
               children: <Widget>[
+                _mostrarFoto(),
                 _crearNombre(),
                 _crearPrecio(),
                 _crearDisponible(context),
@@ -86,7 +103,7 @@ class _ProductPageState extends State<ProductPage> {
   Widget _crearBoton(BuildContext context) {
     return RaisedButton.icon(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
-      onPressed: _submit,
+      onPressed: (!_guardando) ?  _submit : null,
       icon: Icon(Icons.save),
       label: Text('Guardar'),
       color: Theme.of(context).primaryColor,
@@ -94,16 +111,31 @@ class _ProductPageState extends State<ProductPage> {
     );
   }
 
-  void _submit(){
+  void _submit() async {
 
     if(!formKey.currentState.validate()) return;
 
     formKey.currentState.save();
 
-    print('TOdo OK');
-
     
-    productoProider.crearProducto(producto);
+
+    setState(() { _guardando = true; });
+
+    if(foto != null){
+     producto.fotoUrl =  await productoProider.subirImagen(foto);
+    }
+
+    if(producto.id != null){
+      productoProider.editarProducto(producto);
+    }else{
+      productoProider.crearProducto(producto);
+      
+    }
+
+    // setState(() { _guardando = false; });
+      _snakbar('Registro guardado');
+      // para volver la pantalla
+      Navigator.pop(context);
 
   }
 
@@ -117,4 +149,47 @@ class _ProductPageState extends State<ProductPage> {
       }),
     );
   }
+
+  void _snakbar(String mensaje){
+    final snackbar = SnackBar(
+      content: Text(mensaje),
+      duration: Duration(milliseconds: 1500),
+    );
+
+    scaffoldKey.currentState.showSnackBar(snackbar);
+  }
+
+  Widget _mostrarFoto(){
+    if(producto.fotoUrl != null){
+      return FadeInImage(
+        image: NetworkImage(producto.fotoUrl),
+        placeholder: AssetImage('assets/jar-loading.gif'),
+        fit: BoxFit.contain,
+        height: 300.0,
+      );
+    }else{
+      return Image(
+        image: AssetImage(foto?.path ?? 'assets/no-image.png' ),
+        height: 300.0,
+        fit: BoxFit.cover,
+      );
+    }
+  }
+
+  void _seleccionarFoto(ImageSource imageSource) async {
+
+    // final _picker = ImagePicker();
+    foto = await ImagePicker.pickImage(source: imageSource);
+
+    if(foto != null){
+
+      producto.fotoUrl = null;
+
+    }
+
+    setState(() {
+      
+    });
+  }
+
 }

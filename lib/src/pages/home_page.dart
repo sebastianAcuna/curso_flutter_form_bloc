@@ -36,15 +36,49 @@ class HomePage extends StatelessWidget {
          final productos = snapshot.data;
          return ListView.builder(
            itemCount: productos.length ,
-           itemBuilder: (context, i){
-             
-           },
+           itemBuilder: (context, i) => _crearItem(productos[i], context),
          );
        }else{
          return Center(child:CircularProgressIndicator());
        }
      },
    );
+ }
+
+ Widget _crearItem(ProductoModel producto, BuildContext context){
+  //  dismissible es para la animacion de borrar
+   return Dismissible(
+      key: UniqueKey(),
+      background: Container(
+        color: Colors.red,
+      ),
+      onDismissed: (direccion){
+        productosProvider.borrarProducto(producto.id);
+      },
+      child: Card(
+        child: Column(
+          children: <Widget>[
+            (producto.fotoUrl == null) 
+            ? Image(image: AssetImage('assets/no-image.png')) 
+            : FadeInImage(
+              image:NetworkImage(producto.fotoUrl),
+              placeholder: AssetImage('assets/jar-loading.gif'),
+              height: 300.0,
+              width: double.infinity,
+              fit: BoxFit.cover),
+
+               ListTile(
+                title: Text('${producto.titulo} - ${producto.valor }'),
+                subtitle: Text(producto.id),
+                onTap: () => Navigator.pushNamed(context, ProductPage.routeName, arguments: producto),
+
+              ),
+          ],
+        ),
+      )
+   );
+
+  
  }
 
 
