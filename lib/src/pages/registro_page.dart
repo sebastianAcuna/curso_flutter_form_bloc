@@ -1,23 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:formularios_bloc/src/bloc/provider.dart';
-// import 'package:formularios_bloc/src/pages/home_page.dart';
-import 'package:formularios_bloc/src/pages/registro_page.dart';
 import 'package:formularios_bloc/src/providers/usuario_provider.dart';
 import 'package:formularios_bloc/src/utils/utils.dart';
 
-
-
-
+// import 'home_page.dart';
 import 'home_page.dart';
+import 'login_page.dart';
 
-class LoginPage extends StatelessWidget {
-  static final String routeName = "login_page";
+class RegistroPage extends StatelessWidget {
 
+  static final  String routeName = "registro_page";
   final usuarioProvider = UsuarioProvider();
+
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+   return Scaffold(
       body: Stack(children: <Widget>[
         _fondoHeader(context),
         _loginForm(context),
@@ -114,7 +112,7 @@ class LoginPage extends StatelessWidget {
               children: <Widget>[
                 Container(
                   child: Text(
-                    'Ingreso',
+                    'Crear Cuenta',
                     style: TextStyle(
                       fontSize: 20.0,
                     ),
@@ -140,9 +138,9 @@ class LoginPage extends StatelessWidget {
             width: double.infinity,
           ),
           FlatButton(
-            child: Text( '¿Crear una nueva cuenta?', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+            child: Text( '¿Ya tienes una cuenta ? Login', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
           ),
-          onPressed: ()=> Navigator.pushNamed(context, RegistroPage.routeName),
+          onPressed: ()=> Navigator.pushNamed(context, LoginPage.routeName),
           ),
         ],
       ),
@@ -154,7 +152,7 @@ class LoginPage extends StatelessWidget {
         stream: bloc.formValidStream,
         builder: (context, snapshot) {
           return RaisedButton(
-            onPressed: (snapshot.hasData) ? () => _login(bloc, context) : null,
+            onPressed: (snapshot.hasData) ? () => _register(bloc, context) : null,
             color: Theme.of(context).primaryColor,
             textColor: Colors.white,
             child: Container(
@@ -217,10 +215,9 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  _login(LoginBloc bloc, BuildContext context) async {
+  _register(LoginBloc bloc, BuildContext context) async {
 
-
-    Map<String, dynamic> info =  await usuarioProvider.login(bloc.email, bloc.password);
+    Map<String, dynamic> info = await usuarioProvider.nuevoUsuario(bloc.email, bloc.password);
 
 
     if(info['ok']){
@@ -229,10 +226,7 @@ class LoginPage extends StatelessWidget {
     }else{
       mostrarAlerta(context, info["token"]);
     }
-
-      // if(_prefs.token )
+    // Navigator.pushReplacementNamed(context, HomePage.routeName);
     // print('email : ${bloc.email}');
   }
-
-  
 }

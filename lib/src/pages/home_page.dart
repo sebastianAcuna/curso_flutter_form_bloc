@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:formularios_bloc/src/bloc/provider.dart';
+// import 'package:formularios_bloc/src/bloc/provider.dart';
 import 'package:formularios_bloc/src/models/producto_model.dart';
 import 'package:formularios_bloc/src/pages/product_page.dart';
 import 'package:formularios_bloc/src/providers/productos_provider.dart';
@@ -11,7 +11,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bloc = Provider.of(context);
+    // final bloc = Provider.of(context);
     
 
     return Scaffold(

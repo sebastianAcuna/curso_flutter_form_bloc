@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:formularios_bloc/src/models/producto_model.dart';
+import 'package:formularios_bloc/src/preferences/preferencias_usuario.dart';
 import 'package:http/http.dart' as http;
 import 'package:mime_type/mime_type.dart';
 
@@ -15,11 +16,13 @@ class ProductosProvider{
 
   final String _url = 'https://fluttervarios-6729d.firebaseio.com';
 
+  final _prefs = new PreferenciasUsuario();
+
   // get, put , post y delete gracias al rest api 
 
   Future<bool> crearProducto(ProductoModel producto) async {
 
-    final url = '$_url/productos.json';
+    final url = '$_url/productos.json?auth=${_prefs.token}';
 
 
     final response = await http.post(url, body: productoModelToJson(producto));
@@ -35,7 +38,7 @@ class ProductosProvider{
 
   Future<bool> editarProducto(ProductoModel producto) async {
 
-    final url = '$_url/productos/${producto.id}.json';
+    final url = '$_url/productos/${producto.id}.json?auth=${_prefs.token}';
 
 
     final response = await http.put(url, body: productoModelToJson(producto));
@@ -53,7 +56,7 @@ class ProductosProvider{
 
 
   Future<List<ProductoModel>> cargarProductos() async {
-    final url = '$_url/productos.json';
+    final url = '$_url/productos.json?auth=${_prefs.token}';
     final List<ProductoModel> productos = new List();
 
     final resp = await http.get(url);
@@ -75,7 +78,7 @@ class ProductosProvider{
   }
 
   Future<int> borrarProducto(String id) async {
-    final url = '$_url/productos/$id.json';
+    final url = '$_url/productos/$id.json?auth=${_prefs.token}';
     final resp = await http.delete(url);
 
     print(json.decode(resp.body));
