@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:formularios_bloc/src/bloc/provider.dart';
 // import 'package:formularios_bloc/src/bloc/provider.dart';
 import 'package:formularios_bloc/src/models/producto_model.dart';
 import 'package:formularios_bloc/src/pages/product_page.dart';
-import 'package:formularios_bloc/src/providers/productos_provider.dart';
 
 class HomePage extends StatelessWidget {
   static final String routeName = "home_page";
 
-  final productosProvider  = new ProductosProvider();
 
   @override
   Widget build(BuildContext context) {
     // final bloc = Provider.of(context);
-    
+    final productosBloc = Provider.productosBloc(context);
+    productosBloc.cargarProducto();
 
     return Scaffold(
       appBar: AppBar(
@@ -23,20 +23,20 @@ class HomePage extends StatelessWidget {
         child: Icon(Icons.add),
         backgroundColor: Theme.of(context).primaryColor,
       ),
-      body: _crearListado(),
+      body: _crearListado(productosBloc),
     );
   }
 
- Widget  _crearListado() {
+ Widget  _crearListado(ProductosBloc productosBloc) {
 
-   return FutureBuilder(
-     future: productosProvider.cargarProductos(),
+   return StreamBuilder(
+     stream: productosBloc.productosStream,
      builder: (BuildContext context, AsyncSnapshot<List<ProductoModel>> snapshot){
        if(snapshot.hasData){
          final productos = snapshot.data;
          return ListView.builder(
            itemCount: productos.length ,
-           itemBuilder: (context, i) => _crearItem(productos[i], context),
+           itemBuilder: (context, i) => _crearItem(productos[i], productosBloc, context),
          );
        }else{
          return Center(child:CircularProgressIndicator());
@@ -45,7 +45,7 @@ class HomePage extends StatelessWidget {
    );
  }
 
- Widget _crearItem(ProductoModel producto, BuildContext context){
+ Widget _crearItem(ProductoModel producto, ProductosBloc productosBloc, BuildContext context){
   //  dismissible es para la animacion de borrar
    return Dismissible(
       key: UniqueKey(),
@@ -53,7 +53,7 @@ class HomePage extends StatelessWidget {
         color: Colors.red,
       ),
       onDismissed: (direccion){
-        productosProvider.borrarProducto(producto.id);
+        productosBloc.borrarProducto(producto.id);
       },
       child: Card(
         child: Column(
